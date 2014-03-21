@@ -1,21 +1,15 @@
 <?php
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
 $identifier = array 
 (
-	'id' => '69b7e3140a00016c5e4c03d46a931aed',
+	'id' => 'Your-Folder-ID',
 	'type' => 'folder'
 );
 
 $workflowDefinitionIdentifier = array
 (
-	'id' => '3591e3107f0000010020a239a209a2e2',
+	'id' => 'Your-workflowdefinition-ID',
 	'type' => 'workflowdefinition'
 );
 
@@ -27,7 +21,7 @@ if ($reply->readWorkflowSettingsReturn->success=='true')
 	$workflowDefinitions = $reply->readWorkflowSettingsReturn->workflowSettings->workflowDefinitions->assetIdentifier;
 	if (sizeof($workflowDefinitions)==0)
 		$workflowDefinitions = array();
-	else if (!is_array($workflowDefinitions)) // For less than 2 eleements, the returned object isn't an array
+	else if (!is_array($workflowDefinitions)) // For less than 2 elements, the returned object isn't an array
 		$workflowDefinitions=array($workflowDefinitions);		
 	$alreadyContains = false;
 	foreach($workflowDefinitions as $identifier)
@@ -36,7 +30,7 @@ if ($reply->readWorkflowSettingsReturn->success=='true')
 
 	if ($alreadyContains)
 	{
-		echo "Workflow definition is alraedy assigned";
+		echo "<p>Workflow definition is already assigned</p>";
 	}
 	else
 	{
@@ -52,11 +46,11 @@ if ($reply->readWorkflowSettingsReturn->success=='true')
 		$reply = $client->editWorkflowSettings($editParams);
 		
 	    if ($reply->editWorkflowSettingsReturn->success=='true')		
-			echo "Success.";
+			echo "<p>Success.</p>";
 		else
-			echo "Error occurred when editing workflow settings: " . $reply->editWorkflowSettingsReturn->message;		
+			echo "<p>Error occurred when editing workflow settings: " . $reply->editWorkflowSettingsReturn->message."</p>";		
 	}	
 }
 else
-	echo "Error occurred: " . $reply->readWorkflowSettingsReturn->message;
+	echo "<p>Error occurred: " . $reply->readWorkflowSettingsReturn->message."</p>";
 ?>

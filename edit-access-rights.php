@@ -1,15 +1,9 @@
 <?php
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
 $identifier = array 
 (
-	'path' => array(path => '/my-xml-block'),
+	'path' => array('path' => '/my-xml-block'),
 	'type' => 'block'
 );
 
@@ -19,11 +13,11 @@ $reply = $client->readAccessRights($readParams);
 if ($reply->readAccessRightsReturn->success=='true')
 {
 	$accessRightsInformation = $reply->readAccessRightsReturn->accessRightsInformation;
-	$aclEntries = $accessRightsInformation->aclEntries->aclEntry;
+	$aclEntries = $accessRightsInformation->aclEntries->aclEntry; //May give notice of Undefined property
 	
 	if (sizeof($aclEntries)==0)
 		$aclEntries = array();
-    else if (!is_array($aclEntries)) // For less than 2 eleements, the returned object isn't an array
+    else if (!is_array($aclEntries)) // For less than 2 elements, the returned object isn't an array
 		$aclEntries=array($aclEntries);
 	
 	$aclEntries[] = array('level' => 'read', 'type' => 'user', 'name' => 'admin');
@@ -37,10 +31,10 @@ if ($reply->readAccessRightsReturn->success=='true')
 
     $reply = $client->editAccessRights($editParams);
     if ($reply->editAccessRightsReturn->success=='true')		
-		echo "Success.";
+		echo "<p>Success.</p>";
 	else
-		echo "Error occurred when editing access rights: " . $reply->editAccessRightsReturn->message;
+		echo "<p>Error occurred when editing access rights: " . $reply->editAccessRightsReturn->message."</p>";
 }
 else
-	echo "Error occurred: " . $reply->readAccessRightsReturn->message;
+	echo "<p>Error occurred: " . $reply->readAccessRightsReturn->message."</p>";
 ?>

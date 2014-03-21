@@ -1,15 +1,9 @@
 <?php
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
 $identifier = array 
 (
-	'path' => array(path => '/my-xml-block'),
+	'path' => array('path' => '/my-xml-block'),
 	'type' => 'block'
 );
 
@@ -17,7 +11,7 @@ $readParams = array ('authentication' => $auth, 'identifier' => $identifier);
 $reply = $client->read($readParams);
 
 if ($reply->readReturn->success=='true')
-	echo "Success. Block's xml: " . $reply->readReturn->asset->xmlBlock->xml;
+	echo "<p>Success. Block's xml: " . $reply->readReturn->asset->xmlBlock->xml."</p>";
 else
-	echo "Error occurred: " . $reply->readReturn->message;
+	echo "<p>Error occurred: " . $reply->readReturn->message."</p>";
 ?>

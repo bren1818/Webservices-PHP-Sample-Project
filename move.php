@@ -1,25 +1,25 @@
 <?php
 // Move/Rename an asset
 
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
+
+/*
+	As a simple hint, when looking at the URL within cascade, you can get the id and type by clicking on an asset, eg a block. When looking at the URL you'd see something like this:
+	/entity/open.act?id=e4b706330a0a4a86551ffcc20c7eea5e&type=block  - where id is the id, and type is block
+*/
+	
 $identifier = array 
 (
 // ID or path of the asset
-	'id' =>'Your-Page-ID-Here',
+	'id' => 'Your-Page-ID-Here',
 	'type' => 'page'
 );
 
 $destFolderIdentifier = array 
 // Optional if you're renaming not moving
 (
-	'id' =>'Your-New-Folder-ID',
+	'id' => 'Your-New-Folder-ID',
 	'type' => 'folder'
 );
 
@@ -29,10 +29,10 @@ $moveParams = array
 	'identifier' => $identifier, 
 	'moveParameters' => array
 	(
-// Must specify a new name and/or new container for the asset - only one is required
+		// Must specify a new name and/or new container for the asset - only one is required
 		'destinationContainerIdentifier' => $destFolderIdentifier,
 		'newName' => 'New-Page-Name',
-// Required: true or false
+		// Required: true or false
 		'doWorkflow' => false,
 	)
 );
@@ -40,7 +40,7 @@ $moveParams = array
 $reply = $client->move($moveParams);
 
 if ($reply->moveReturn->success=='true')
-	echo "Success.";
+	echo "<p>Success.</p>";
 else
-	echo "Error occurred when moving/renaming: " . $reply->moveReturn->message;
+	echo "<p>Error occurred when moving/renaming: " . $reply->moveReturn->message."</p>";
 ?>

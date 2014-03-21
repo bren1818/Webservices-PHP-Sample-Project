@@ -1,13 +1,7 @@
 <?php
 // Publish a page or file
 
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
 $identifier = array 
 (
@@ -34,8 +28,8 @@ $publishParams = array ('authentication' => $auth, 'publishInformation' => $publ
 $reply = $client->publish($publishParams);
 
 if ($reply->publishReturn->success=='true')
-	echo "Success: Published.";
+	echo "<p>Success: Published.</p>";
 else
-	echo "Error occurred when publishing: " . $reply->publishReturn->message;
+	echo "<p>Error occurred when publishing: " . $reply->publishReturn->message."</p>";
 
 ?>

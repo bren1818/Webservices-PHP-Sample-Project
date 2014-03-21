@@ -1,11 +1,5 @@
 <?php
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
+include "db.php";
 
 $identifier = array 
 (
@@ -18,29 +12,29 @@ $reply = $client->readWorkflowSettings($readParams);
 
 if ($reply->readWorkflowSettingsReturn->success=='true')
 {
-	echo "Inherit workflows: ".($reply->readWorkflowSettingsReturn->workflowSettings->inheritWorkflows?"true":"false");
-	echo "\r\nRequired workflow: ".($reply->readWorkflowSettingsReturn->workflowSettings->requireWorkflow?"true":"false");
+	echo "<p>Inherit workflows: ".($reply->readWorkflowSettingsReturn->workflowSettings->inheritWorkflows?"true":"false")."</p>";
+	echo "<p>Required workflow: ".($reply->readWorkflowSettingsReturn->workflowSettings->requireWorkflow?"true":"false")."</p>";
 	
 	$workflowDefinitions = $reply->readWorkflowSettingsReturn->workflowSettings->workflowDefinitions->assetIdentifier;
 	if (sizeof($workflowDefinitions)==0)
 		$workflowDefinitions = array();
-	else if (!is_array($workflowDefinitions)) // For less than 2 eleements, the returned object isn't an array
+	else if (!is_array($workflowDefinitions)) // For less than 2 elements, the returned object isn't an array
 		$workflowDefinitions=array($workflowDefinitions);		
-	echo "\r\nWorkflow definitions: ";
+	echo "<p>Workflow definitions: </p>";
 	foreach($workflowDefinitions as $identifier)
-		echo "site://" .$identifier->path->siteName."/".$identifier->path->path . " ";
+		echo "<p>site://" .$identifier->path->siteName."/".$identifier->path->path . " </p>";
 		
 	$inheritedWorkflowDefinitions = $reply->readWorkflowSettingsReturn->workflowSettings->inheritedWorkflowDefinitions->assetIdentifier;
 	if (sizeof($inheritedWorkflowDefinitions)==0)
 		$inheritedWorkflowDefinitions = array();
-	else if (!is_array($inheritedWorkflowDefinitions)) // For less than 2 eleements, the returned object isn't an array
+	else if (!is_array($inheritedWorkflowDefinitions)) // For less than 2 elements, the returned object isn't an array
 		$inheritedWorkflowDefinitions=array($inheritedWorkflowDefinitions);
-	echo "\r\nInherited workflow definitions: ";
+	echo "<p>Inherited workflow definitions: </p>";
 	foreach($inheritedWorkflowDefinitions as $identifier)
-		echo "site://" .$identifier->path->siteName."/".$identifier->path->path . " ";
+		echo "<p>site://" .$identifier->path->siteName."/".$identifier->path->path . " </p>";
 	
-	echo "\r\n";
+
 }
 else
-	echo "Error occurred: " . $reply->readWorkflowSettingsReturn->message;
+	echo "<p>Error occurred: " . $reply->readWorkflowSettingsReturn->message."</p>";
 ?>

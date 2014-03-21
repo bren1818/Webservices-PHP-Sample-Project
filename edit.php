@@ -1,15 +1,9 @@
 <?php
-$soapURL = "http://localhost:8080/ws/services/AssetOperationService?wsdl";
-$client = new SoapClient 
-( 
-	$soapURL, 
-	array ('trace' => 1, 'location' => str_replace('?wsdl', '', $soapURL)) 
-);	
-$auth = array ('username' => 'admin', 'password' => 'admin' );
-
+include "db.php";
+/*Updates the Block's metadata Title*/
 $identifier = array 
 (
-	'path' => array(path => '/my-xml-block'),
+	'path' => array('path' => '/my-xml-block'),
 	'type' => 'block'
 );
 
@@ -23,10 +17,10 @@ if ($reply->readReturn->success=='true')
 	$editParams = array ('authentication' => $auth, 'asset' => array('xmlBlock' => $xmlBlock));
 	$reply = $client->edit($editParams);
 	if ($reply->editReturn->success=='true')		
-		echo "Success.";
+		echo "<p>Metadata updated Successfully.</p>";
 	else
-		echo "Error occurred when issuing an edit: " . $reply->editReturn->message;
+		echo "<p>Error occurred when issuing an edit: " . $reply->editReturn->message."</p>";
 }
 else
-	echo "Error occurred when reading: " . $reply->readReturn->message;
+	echo "<p>Error occurred when reading: " . $reply->readReturn->message."</p>";
 ?>

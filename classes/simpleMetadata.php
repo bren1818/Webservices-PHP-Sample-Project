@@ -16,10 +16,10 @@
 		private $teaser;
 		private $title;
 		private $dynamicFields; //array?
-		public $baseObject;
+		//public $baseObject;
 		
 		function __construct( $metadata ){
-			$this->setBaseObject($metadata);	
+			//$this->setBaseObject($metadata);	
 			$this->setAuthor( $metadata->author );
 			$this->setDisplayName( $metadata->displayName );
 			$this->setEndDate( $metadata->endDate );
@@ -32,7 +32,7 @@
 			$this->setTitle( $metadata->title );
 			$this->setDynamicFields( $metadata->dynamicFields );
 		}
-	
+		/*
 		public function  setBaseObject( $metadata ){
 			$this->baseObject = $metadata;
 		}
@@ -40,6 +40,7 @@
 		public function getBaseObject(){
 			return $this->baseObject;
 		}
+		*/
 		
 		function setAuthor($author) { $this->author = $author; }
 		function getAuthor() { return $this->author; }

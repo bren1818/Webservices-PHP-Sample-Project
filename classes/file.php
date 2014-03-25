@@ -28,13 +28,44 @@
 		private $metadata; //simpleMetadata Object
 		
 		
-		//Custome to file
+		//Custom to file
 		private $rewriteLinks;
 		private $createdBy;
 		private $text;
 		private $data;
 		
-		
+		function __construct( $client, $readParams ){
+			$file = $client->read($readParams);
+			if( isset($file->readReturn->success) && $file->readReturn->success == true ){
+				$file = $file->readReturn->asset->file;
+				
+				$this->setId( $file->id);
+				$this->setName( $file->name);
+				$this->setParentFolderId( $file->parentFolderId);
+				$this->setParentFolderPath( $file->parentFolderPath);
+				$this->setPath( $file->path);
+				$this->setLastModifiedDate( $file->lastModifiedDate);
+				$this->setLastModifiedBy( $file->lastModifiedBy);
+				$this->setCreatedDate( $file->createdDate);
+				$this->setSiteId( $file->siteId);
+				$this->setSiteName( $file->siteName);
+				$this->setMetadataSetId( $file->metadataSetId);
+				$this->setMetadataSetPath( $file->metadataSetPath);
+				$this->setExpirationFolderId( $file->expirationFolderId);
+				$this->setExpirationFolderPath( $file->expirationFolderPath);
+				$this->setExpirationFolderRecycled( $file->expirationFolderRecycled);
+				$this->setShouldBePublished( $file->shouldBePublished);
+				$this->setShouldBeIndexed( $file->shouldBeIndexed);
+				$this->setLastPublishedDate( $file->lastPublishedDate);
+				$this->setLastPublishedBy( $file->lastPublishedBy);
+				$this->setMaintainAbsoluteLinks( $file->maintainAbsoluteLinks);
+				$this->setMetadata( $file->metadata);
+				$this->setRewriteLinks( $file->rewriteLinks);
+				$this->setCreatedBy( $file->createdBy);
+				$this->setText( $file->text);
+				$this->setData( $file->data );
+			}
+		}
 		
 		
 		
@@ -82,14 +113,20 @@
 		function getRewriteLinks() { return $this->rewriteLinks; }
 		function setMaintainAbsoluteLinks($maintainAbsoluteLinks) { $this->maintainAbsoluteLinks = $maintainAbsoluteLinks; }
 		function getMaintainAbsoluteLinks() { return $this->maintainAbsoluteLinks; }
-		function setMetadata($metadata) { $this->metadata = $metadata; }
-		function getMetadata() { return $this->metadata; }
+		//function setMetadata($metadata) { $this->metadata = $metadata; }
+		//function getMetadata() { return $this->metadata; }
 		function setText($text) { $this->text = $text; }
 		function getText() { return $this->text; }
 		function setData($data) { $this->data = $data; }
 		function getData() { return $this->data; }
 	
-	
+		public function setMetadata( $metaObj ){
+			$this->metadata = new simpleMetadata( $metaObj );
+		}
+		
+		public function getMetadata(){
+			return $this->metadata;
+		}
 	
 	}
 

@@ -8,6 +8,7 @@
 	include "db.php";
 	include "classes/page.php";
 	include "classes/folder.php";
+	include "classes/file.php";
 	include "classes/contentType.php";
 	include "classes/configurationSet.php";
 
@@ -82,8 +83,6 @@
 			$apc = $cs->getActiveConfiguration();
 			
 			//check if page is publishable
-			//print_form( $p );
-			
 			if( $p->isPublished() ){
 				echo "<a target='_blank' href='".$CURRENT_SITE_URL.$p->getPath().$apc->getOutputExtension()."'>".$p->getName()."</a> [Published: ".$p->isPublished()."] by: ".$p->getCreatedBy();
 			}
@@ -97,62 +96,34 @@
 		global $auth, $client, $CURRENT_SITE_URL;
 		$identifier = array('id' => $fileID, 'type' => 'file'  ); //will read the page itself...
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		//$file = $client->read($readParams);
-		//AssetFile
-		//print_form( $file );
-	
+		
+		$file = new AssetFile( $client, $readParams );
+		
+		echo "<a target='_blank' href='".$CURRENT_SITE_URL.$file->getPath()."'>".$file->getName()."</a>";
+
 	}
-	
-	/*
-	function read_Folder( $folderID ){
-	
-		global $auth, $client, $CURRENT_SITE_URL;
-		$identifier = array('id' => $folderID, 'type' => 'folder'  ); //will read the page itself...
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$folder = $client->read($readParams);
-		return new Folder($folder);
-	
-	}*/
-	
-	
-	
 	
 	//function which will call itself to make the tree with some classes
 	function read_folder($folder){
-		global $auth, $client;
-		
-		//$f = new Folder( $folder );
-		
-		//print_form( $folder );
-		
 		if( isset ( $folder )  ) {
 			echo $folder->getName();
+			
 			echo "<ul class='folder folderContents'>"; 
-
-				//$folderPath = $folder->getPath(); //$folder->readReturn->asset->folder->path;
 				if( $folder->hasChildren() ){
 					$children = $folder->getChildren(); //null;
-					foreach($children as $child ){ //array of childFolder elements
-						
+					foreach($children as $child ){ //array of childFolder elements	
 						if(  $child->getType() == "folder"  ){
-						
-							//$folderPath = $child->getPath(); //path->path;
-					
 							$nextFolder = show_contents( $child->getPath(), $child->getSiteId() );
-							
 							if( $nextFolder->getShouldBePublished() ){
-							echo "<li class='folder'>";
-								read_folder( $nextFolder );	
-							echo "</li>";
+								echo "<li class='folder'>";
+									read_folder( $nextFolder );	
+								echo "</li>";
 							}
 						}else if(  $child->getType() == "file" ) {
-						
 							echo "<li class='file'>";
-								echo $child->getPath();
-								//read_File( $child->id );
+								read_File( $child->getId() );
 							echo "</li>";
 						}else if(  $child->getType() == "page" ) {
-							//$pagePath = $child->getPath();
 							echo "<li class='page'>";
 								readPage( $child->getId() );
 							echo "</li>";
@@ -173,7 +144,7 @@
 		$identifier = array('path' => array('siteId' => $siteId, 'path' => $path), 'type' => 'folder'  ); //will read the folder itself...
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
 		$folder = new Folder( $client, $readParams );
-		//read_folder($folder);
+		
 		return $folder;
 	}	
 	

@@ -106,16 +106,21 @@
 	
 		private function setChildren($children){
 			$ChildrenArray = array();
-			foreach($children as $child ){
-				
-				if( is_object( $child ) && isset( $child->type )  ){
-					$ChildrenArray[] = new ChildFolder($child);
-				}else{
-					//may not be valid
+			if( sizeof( $children ) == 1 ){
+				$ChildrenArray[] = new ChildFolder($children);
+				$this->children = $ChildrenArray;
+				$this->numChildren = 1;
+			}else{
+				foreach($children as $child ){
+					if( is_object( $child ) && isset( $child->type )  ){
+						$ChildrenArray[] = new ChildFolder($child);
+					}else{
+						//may not be valid
+					}
 				}
+				$this->numChildren = sizeof( $ChildrenArray );
+				$this->children = $ChildrenArray;
 			}
-			$this->numChildren = sizeof( $ChildrenArray );
-			$this->children = $ChildrenArray;
 		}
 		
 		private function getNumChildren(){

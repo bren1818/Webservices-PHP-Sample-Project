@@ -43,7 +43,6 @@
 			//$this->setInlineEditableFields(); to do
 		}
 	
-	
 		function setId($id) { $this->id = $id; }
 		function getId() { return $this->id; }
 		function setName($name) { $this->name = $name; }
@@ -69,8 +68,7 @@
 		function setDataDefinitionId($dataDefinitionId) { $this->dataDefinitionId = $dataDefinitionId; }
 		function getDataDefinitionId() { return $this->dataDefinitionId; }
 		function setDataDefinitionPath($dataDefinitionPath) { $this->dataDefinitionPath = $dataDefinitionPath; }
-		function getDataDefinitionPath() { return $this->dataDefinitionPath; }
-	
+		function getDataDefinitionPath() { return $this->dataDefinitionPath; }	
 	}
 
 

@@ -6,11 +6,9 @@
 	*/
 
 	include "db.php";
-	include "classes/page.php";
-	include "classes/folder.php";
 	include "classes/file.php";
-	include "classes/contentType.php";
-	include "classes/configurationSet.php";
+	include "classes/baseAsset.php";
+	
 
 	$listSitesParams = array ('authentication' => $auth);
 	$reply = $client->listSites($listSitesParams);
@@ -30,84 +28,53 @@
 		echo '<pre>'.print_r($obj,true).'</pre>';
 	}
 	
-	
-	
-	function read_configurationSet( $configID ){
-		global $auth, $client;
-		$identifier = array('id' => $configID, 'type' => 'pageconfigurationset'  ); 
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$CS = $client->read($readParams);
-		
-		//echo "Configuration ID: ".$configID ;
-		
-		if( $CS->readReturn->success == true &&  isset( $CS->readReturn->asset->pageConfigurationSet ) ){ 
-			$configurationSet = new ConfigurationSet($CS->readReturn->asset->pageConfigurationSet);
-			return $configurationSet;
-		}
-		
-	}
-	
-	
-	function read_contentType( $contentType ){
-		global $auth, $client;
-		//echo "Content Type ID: ".$contentType;
-		
-		$identifier = array('id' => $contentType, 'type' => 'contenttype'  ); //will read the page itself...
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$CT = $client->read($readParams);
-			
-		if( $CT->readReturn->success == true &&  isset( $CT->readReturn->asset->contentType ) ){ 
-			$contentType = new ContentType($CT->readReturn->asset->contentType);
-			return $contentType;
-		}
-
-	}
-	
-	
 	function readPage($pageID){
+	
 		global $auth, $client, $CURRENT_SITE_URL;
+	
+		$asset = new BaseAsset($client, $auth);
+		$p = $asset->getById( BaseAsset::$type_page, $pageID );
+		$ct = $asset->getById( BaseAsset::$type_contentType, $p->getContentTypeId() );
+		$cs = $asset->getById( BaseAsset::$type_pageConfigurationSet , $ct->getPageConfigurationSetId() );
 		
-		$identifier = array('id' => $pageID, 'type' => 'page'  ); //will read the page itself...
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$page = $client->read($readParams);
+		//$pc =  $cs->getPageConfigurations();
+		$apc = $cs->getActiveConfiguration();
 		
-		if( isset($page->readReturn->success) && $page->readReturn->success == true ){
-			$page = $page->readReturn->asset->page;
-		
-			$p = new Page( $client, $readParams );
-			$ct = read_contentType( $p->getContentTypeId() );
-			$cs = read_configurationSet( $ct->getPageConfigurationSetId() );
-			
-			$pc =  $cs->getPageConfigurations();
-		
-			$apc = $cs->getActiveConfiguration();
-			
-			//check if page is publishable
-			if( $p->isPublished() ){
-				echo "<a target='_blank' href='".$CURRENT_SITE_URL.$p->getPath().$apc->getOutputExtension()."'>".$p->getName()."</a> [Published: ".$p->isPublished()."] by: ".$p->getCreatedBy();
-			}
-		}else{
-		
+		//check if page is publishable
+		if( $p->isPublished() ){
+			echo "<a target='_blank' href='".$CURRENT_SITE_URL.$p->getPath().$apc->getOutputExtension()."'>".$p->getName()."</a> [Published: ".$p->isPublished()."] by: ".$p->getCreatedBy();
 		}
-		//print_form( $page );
+		
 	}
 	
 	function read_File( $fileID ){
 		global $auth, $client, $CURRENT_SITE_URL;
-		$identifier = array('id' => $fileID, 'type' => 'file'  ); //will read the page itself...
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		
-		$file = new AssetFile( $client, $readParams );
-		
+		$asset = new BaseAsset($client, $auth);
+		$file = $asset->getById( BaseAsset::$type_file, $fileID );
 		echo "<a target='_blank' href='".$CURRENT_SITE_URL.$file->getPath()."'>".$file->getName()."</a>";
-
 	}
 	
 	//function which will call itself to make the tree with some classes
 	function read_folder($folder){
+		global $CURRENT_SITE_URL;	
 		if( isset ( $folder )  ) {
-			echo $folder->getName();
+			$displayPath = 0;
+			if( $folder->hasChildren() ){
+				foreach( $folder->getChildren() as $child ){
+
+					if( $child->getType() == "page" && end( explode( "/", $child->getPath() ) ) == "index" ){
+						$displayPath = 1;
+						break;
+					}					
+				}
+			}
 			
+			if( $displayPath ){
+				echo "<a target='_blank' href='".$CURRENT_SITE_URL.$folder->getPath()."/index.html'>".$folder->getName()."</a>";
+			}else{
+				echo $folder->getName();
+			}
+
 			echo "<ul class='folder folderContents'>"; 
 				if( $folder->hasChildren() ){
 					$children = $folder->getChildren(); //null;
@@ -141,25 +108,21 @@
 	//Looks at the contents of a folder or site root and calls the read_folders function
 	function show_contents( $path, $siteId ){
 		global $auth, $client;
-		$identifier = array('path' => array('siteId' => $siteId, 'path' => $path), 'type' => 'folder'  ); //will read the folder itself...
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$folder = new Folder( $client, $readParams );
-		
+		$asset = new BaseAsset($client, $auth);
+		$folder = $asset->getByPath( BaseAsset::$type_folder, $path, $siteId );
 		return $folder;
 	}	
 	
 	//Initial function to read a site
-	function read_site( $namePath ){
+	function read_site( $sitePath ){
 		global $auth, $client;
-		$identifier = array('path' => array('path' => $namePath),'type' => 'site');
-		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$reply = $client->read($readParams);
+		$asset = new BaseAsset($client, $auth);
+		$site = $asset->getByPath( BaseAsset::$type_site, $sitePath );
 		
-		echo "<h2>".$reply->readReturn->asset->site->name." (".$reply->readReturn->asset->site->url.")</h2>";
-		global $CURRENT_SITE_URL;
-			   //$CURRENT_SITE_URL = $reply->readReturn->asset->site->url;
+		echo "<h2>".$site->getName()." (".$site->getUrl().")</h2>";
+
 		echo "<ul class='site'>";
-			read_folder( show_contents( '/', $reply->readReturn->asset->site->id ) );
+			read_folder( show_contents( '/', $site->getId() ) );
 		echo "</ul>";
 	}
 	

@@ -16,7 +16,6 @@
 		private $teaser;
 		private $title;
 		private $dynamicFields; //array?
-		//public $baseObject;
 		
 		function __construct( $metadata ){
 			//$this->setBaseObject($metadata);	
@@ -32,15 +31,6 @@
 			$this->setTitle( $metadata->title );
 			$this->setDynamicFields( $metadata->dynamicFields );
 		}
-		/*
-		public function  setBaseObject( $metadata ){
-			$this->baseObject = $metadata;
-		}
-		
-		public function getBaseObject(){
-			return $this->baseObject;
-		}
-		*/
 		
 		function setAuthor($author) { $this->author = $author; }
 		function getAuthor() { return $this->author; }
@@ -65,6 +55,5 @@
 		function setDynamicFields($dynamicFields) { $this->dynamicFields = $dynamicFields; }
 		function getDynamicFields() { return $this->dynamicFields; }
 	
-
 	}
 ?>

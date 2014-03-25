@@ -103,6 +103,7 @@
 	
 	}
 	
+	/*
 	function read_Folder( $folderID ){
 	
 		global $auth, $client, $CURRENT_SITE_URL;
@@ -111,63 +112,49 @@
 		$folder = $client->read($readParams);
 		return new Folder($folder);
 	
-	}
+	}*/
 	
 	
 	
 	
 	//function which will call itself to make the tree with some classes
-	function read_folders($folder, $siteId){
+	function read_folder($folder){
 		global $auth, $client;
 		
 		//$f = new Folder( $folder );
 		
-		//print_form( $f );
+		//print_form( $folder );
 		
-		if( isset ( $folder->readReturn->asset->folder ) ) {
-			$folder = $folder->readReturn->asset->folder;
-			if( isset( $folder->readReturn->asset->folder->name ) ){
-				echo $folder->readReturn->asset->folder->name;
-			}else{
-				echo $folder->name;
-			}
+		if( isset ( $folder )  ) {
+			echo $folder->getName();
 			echo "<ul class='folder folderContents'>"; 
-				$path = $folder->path;
-				$identifier = array('path' => array('siteId' => $siteId, 'path' => $path), 'type' => 'folder'  ); //will read the folder itself...
-				$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-				$folder = $client->read($readParams);
 
-				$folderPath = $folder->readReturn->asset->folder->path;
-				$folderChildren = null;
-				if( isset($folder->readReturn->asset->folder->children->child) ){
-					$folderChildren = $folder->readReturn->asset->folder->children->child; //array
-				}
-
-				if( isset($folderChildren) ){
-					$children = $folder->readReturn->asset->folder->children->child; //array
-					foreach($children as $child ){
+				//$folderPath = $folder->getPath(); //$folder->readReturn->asset->folder->path;
+				if( $folder->hasChildren() ){
+					$children = $folder->getChildren(); //null;
+					foreach($children as $child ){ //array of childFolder elements
 						
-						if( isset( $child->type ) && $child->type == "folder"  ){
-							//There should be a check here for a _ in the beginning of the name and then assume they're Cascade files not should not be linked
+						if(  $child->getType() == "folder"  ){
 						
-							$folderPath = $child->path->path;
+							//$folderPath = $child->getPath(); //path->path;
+					
+							$nextFolder = show_contents( $child->getPath(), $child->getSiteId() );
+							
+							if( $nextFolder->getShouldBePublished() ){
 							echo "<li class='folder'>";
-								show_contents( $child->path->path, $siteId );
-								//content just files... Need to fix
-								
+								read_folder( $nextFolder );	
 							echo "</li>";
-						}else if( isset( $child->type ) && $child->type == "file" ) {
-							$filePath = $child->path->path;
+							}
+						}else if(  $child->getType() == "file" ) {
+						
 							echo "<li class='file'>";
-								echo $filePath;
+								echo $child->getPath();
 								//read_File( $child->id );
 							echo "</li>";
-						
-						}else if( isset( $child->type ) && $child->type == "page" ) {
-							$pagePath = $child->path->path;
+						}else if(  $child->getType() == "page" ) {
+							//$pagePath = $child->getPath();
 							echo "<li class='page'>";
-								//we have $child->id, $child->path->path, $child->path->siteId, $child->path->siteName, $child->type, $child->recycled
-								readPage( $child->id );
+								readPage( $child->getId() );
 							echo "</li>";
 						}else{
 							//Not something we're likely interested in
@@ -183,16 +170,11 @@
 	//Looks at the contents of a folder or site root and calls the read_folders function
 	function show_contents( $path, $siteId ){
 		global $auth, $client;
-		
 		$identifier = array('path' => array('siteId' => $siteId, 'path' => $path), 'type' => 'folder'  ); //will read the folder itself...
-		
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$folder = $client->read($readParams);
-		
-		
-		
-		
-		read_folders($folder, $siteId);
+		$folder = new Folder( $client, $readParams );
+		//read_folder($folder);
+		return $folder;
 	}	
 	
 	//Initial function to read a site
@@ -206,7 +188,7 @@
 		global $CURRENT_SITE_URL;
 			   //$CURRENT_SITE_URL = $reply->readReturn->asset->site->url;
 		echo "<ul class='site'>";
-			show_contents( '/', $reply->readReturn->asset->site->id );
+			read_folder( show_contents( '/', $reply->readReturn->asset->site->id ) );
 		echo "</ul>";
 	}
 	

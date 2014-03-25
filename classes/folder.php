@@ -7,11 +7,16 @@
 		private $recycled;
 	
 		function __construct( $child ){
-			$this->setId( $child->id );
-			$this->setPath( $child->path->path );
-			$this->setSiteId($child->path->siteId);
-			$this->setType( $child->type);
-			$this->setRecycled( $child->recycled);
+			if( is_object ( $child ) ){
+				$this->setId( $child->id );
+				$this->setPath( $child->path->path );
+				$this->setSiteId($child->path->siteId);
+				$this->setType( $child->type);
+				$this->setRecycled( $child->recycled);
+			
+			}else{
+				//This is  not an object and wont work	
+			}
 		}
 	
 		function setId($id) { $this->id = $id; }
@@ -53,7 +58,9 @@
 		
 		function __construct( $client, $readParams ){
 			$folder = $client->read($readParams);
+			
 			if( isset($folder->readReturn->success) && $folder->readReturn->success == true ){
+				$folder = $folder->readReturn->asset->folder;
 				$this->setId( $folder->id );
 				$this->setName( $folder->name);
 				$this->setParentFolderId( $folder->parentFolderId);
@@ -76,10 +83,12 @@
 				$this->setLastPublishedDate( $folder->lastPublishedDate);
 				$this->setLastPublishedBy( $folder->lastModifiedBy);
 				
-				$this->setChildren( $folder->children->child );
-				
-			
-		
+				if( isset( $folder->children->child ) ){
+					$this->setChildren( $folder->children->child );
+				}else{
+					$this->children = array();
+					$this->numChildren = 0;
+				}
 			}
 		}
 		
@@ -94,12 +103,16 @@
 				return FALSE;
 			}
 		}
-		
-		
+	
 		private function setChildren($children){
 			$ChildrenArray = array();
 			foreach($children as $child ){
-				$ChildrenArray[] = new ChildFolder($child);
+				
+				if( is_object( $child ) && isset( $child->type )  ){
+					$ChildrenArray[] = new ChildFolder($child);
+				}else{
+					//may not be valid
+				}
 			}
 			$this->numChildren = sizeof( $ChildrenArray );
 			$this->children = $ChildrenArray;
@@ -108,8 +121,6 @@
 		private function getNumChildren(){
 			return $this->numChildren;
 		}
-		
-		
 		
 		public function setMetadata( $metaObj ){
 			$this->metadata = new simpleMetadata( $metaObj );

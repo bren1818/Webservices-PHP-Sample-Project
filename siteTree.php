@@ -7,6 +7,7 @@
 
 	include "db.php";
 	include "classes/page.php";
+	include "classes/folder.php";
 	include "classes/contentType.php";
 	include "classes/configurationSet.php";
 
@@ -76,16 +77,16 @@
 			$ct = read_contentType( $p->getContentTypeId() );
 			$cs = read_configurationSet( $ct->getPageConfigurationSetId() );
 			
-			//echo "Configuration Count: ". $cs->getPageConfigurationCount();
-			//page configurations (array)
 			$pc =  $cs->getPageConfigurations();
-			//active configuration
+		
 			$apc = $cs->getActiveConfiguration();
 			
-			//echo $apc->getOutputExtension();
+			//check if page is publishable
+			//print_form( $p );
 			
-			
-			echo "<a target='_blank' href='".$CURRENT_SITE_URL.$p->getPath().$apc->getOutputExtension()."'>".$p->getName()."</a> [Published: ".$p->isPublished()."] by: ".$p->getCreatedBy();
+			if( $p->isPublished() ){
+				echo "<a target='_blank' href='".$CURRENT_SITE_URL.$p->getPath().$apc->getOutputExtension()."'>".$p->getName()."</a> [Published: ".$p->isPublished()."] by: ".$p->getCreatedBy();
+			}
 		}else{
 		
 		}
@@ -96,19 +97,33 @@
 		global $auth, $client, $CURRENT_SITE_URL;
 		$identifier = array('id' => $fileID, 'type' => 'file'  ); //will read the page itself...
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
-		$file = $client->read($readParams);
+		//$file = $client->read($readParams);
 		//AssetFile
 		//print_form( $file );
-		
-	
 	
 	}
+	
+	function read_Folder( $folderID ){
+	
+		global $auth, $client, $CURRENT_SITE_URL;
+		$identifier = array('id' => $folderID, 'type' => 'folder'  ); //will read the page itself...
+		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
+		$folder = $client->read($readParams);
+		return new Folder($folder);
+	
+	}
+	
 	
 	
 	
 	//function which will call itself to make the tree with some classes
 	function read_folders($folder, $siteId){
 		global $auth, $client;
+		
+		//$f = new Folder( $folder );
+		
+		//print_form( $f );
+		
 		if( isset ( $folder->readReturn->asset->folder ) ) {
 			$folder = $folder->readReturn->asset->folder;
 			if( isset( $folder->readReturn->asset->folder->name ) ){
@@ -168,9 +183,15 @@
 	//Looks at the contents of a folder or site root and calls the read_folders function
 	function show_contents( $path, $siteId ){
 		global $auth, $client;
+		
 		$identifier = array('path' => array('siteId' => $siteId, 'path' => $path), 'type' => 'folder'  ); //will read the folder itself...
+		
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
 		$folder = $client->read($readParams);
+		
+		
+		
+		
 		read_folders($folder, $siteId);
 	}	
 	
@@ -180,6 +201,7 @@
 		$identifier = array('path' => array('path' => $namePath),'type' => 'site');
 		$readParams = array ('authentication' => $auth, 'identifier' => $identifier);
 		$reply = $client->read($readParams);
+		
 		echo "<h2>".$reply->readReturn->asset->site->name." (".$reply->readReturn->asset->site->url.")</h2>";
 		global $CURRENT_SITE_URL;
 			   //$CURRENT_SITE_URL = $reply->readReturn->asset->site->url;

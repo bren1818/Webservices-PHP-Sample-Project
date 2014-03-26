@@ -48,55 +48,81 @@
 		}
 		
 		function previewAsset(type,id,el){
-			console.log( "Lookup " + type + " by id: " + id );
-			$.post( "getAsset.php", { type : type, id : id }, function( data ) {
-				
-				var assetHTML = "";
-				var json = jQuery.parseJSON( data );
-
-				jQuery.each(json, function(key, value){
-					if( value == null || value ===false){
-						assetHTML += "<b>" + key + "</b>" + " <br />-<br />";
-					}else if( typeof(value) == 'object' ){
-						assetHTML += "<b>" + key + "</b><br />";
-						assetHTML += getNested( value ) + "<br />";
-					}else{					
-						assetHTML += "<b>" + key + "</b>" + " <br />" + value + "<br />";
-					}
+			if( $(el).parent().find('.preview').length ){
+				$(el).html("Show");
+				$(el).parent().find('.preview').remove();
+			}else{
+				$.post( "getAsset.php", { type : type, id : id }, function( data ) {
+					var assetHTML = "";
+					var json = jQuery.parseJSON( data );
+					jQuery.each(json, function(key, value){
+						if( value == null || value ===false){
+							assetHTML += "<b>" + key + "</b>" + " <br />-<br />";
+						}else if( typeof(value) == 'object' ){
+							assetHTML += "<b>" + key + "</b><br />";
+							assetHTML += getNested( value ) + "<br />";
+						}else{					
+							assetHTML += "<b>" + key + "</b>" + " <br />" + value + "<br />";
+						}
+					});
+					
+					$(el).parent().append("<div class='preview'>" + assetHTML  + "</div>");
+					$(el).html("Hide");
 				});
-				
-				$(el).parent().append("<div class='preview'>" + assetHTML  + "</div>");
-				
-			});
+			}
 		
+		}
+		
+		function isNull(thing){
+			if( typeof(thing) === 'undefined' || thing == null || thing === false ){
+				return "";
+			}else{
+				return thing;
+			}
 		}
 		
 		$(function(){
 			$('#go').click(function(event){
 				event.preventDefault();
 				var formData = $('#searchForm').serializeObject ();
-
+				$('#results').html( "" );
 				$.post( "magic.php", { search : formData }, function( data ) {
 					var res = jQuery.parseJSON( data );
-					var resCount = res.results;	
-					if( resCount > 0 ){
-						var HTML = "<p>" + resCount + " results found.</p><ul>";
-						jQuery.each(res.items, function(i, val) {
-							HTML += "<li>" + (i + 1) + ". ID: " + val.id + "<br />" +
-									" - Type: " + val.type +  "<br />" +
-									" - Path: " + val.path.path +  "<br />" +
-									" - SiteName: " + val.path.siteName +  "<br />" +
-									" - SiteId: " + val.path.siteId +  "<br />" +
-									" - Recycled: " + val.recycled + "<br />";
-							HTML += "<a href='#' onClick='previewAsset(\"" + val.type + "\", \"" + val.id+ "\", this)'>preview Asset</a>";
-						});
+					var items;
+					
+					if (typeof res.items !== 'undefined' && res.items.length > 0) {	
+						if( typeof(res.items[0].length) === 'undefined'){
+							var resCount = res.results;
+							items = res.items;
+						}else{
+							var resCount = res.items[0].length;
+							items = res.items[0];
+						}
 						
-						HTML += "</li>";
-						HTML += "</ul>";
-						
-						$('#results').html( HTML );
+						if( resCount > 0 ){
+							var HTML = "<p>" + resCount + " results found.</p><ul>";
+
+							jQuery.each(items, function(i, val) {
+								HTML += "<li>" + (i + 1) + ". ID: " + isNull(val.id) + "<br />" +
+									" - Type: " + isNull(val.type) +  "<br />";
+									if( isNull( val.path ) != "" ){
+										HTML += " - Path: " +isNull(val.path.path) +  "<br />" +
+										" - SiteName: " +isNull(val.path.siteName) +  "<br />" +
+										" - SiteId: " + isNull(val.path.siteId) +  "<br />";
+									}
+								HTML += " - Recycled: " + isNull(val.recycled) + "<br />";
+								HTML += "<a class='showMore' onClick='previewAsset(\"" + val.type + "\", \"" + val.id+ "\", this)'>preview Asset</a>";
+							});
+							
+							HTML += "</li>";
+							HTML += "</ul>";
+							
+							$('#results').html( HTML );
+						}else{
+							$('#results').html("No Results Found");
+						}
 					}else{
-						$('#results').html("No Results Found");
+					$('#results').html("No Results Found");
 					}
 				});
 			});
@@ -106,18 +132,60 @@
 	<style>
 		.nested{
 			margin: 3px;
-			padding-left: 10px;
+			padding-left: 5px;
 			border: 1px solid #000;
 			font-size: 8px;
 		}
 		
+		.showMore {
+			cursor: pointer;
+			-moz-box-shadow:inset 0px 1px 0px 0px #97c4fe;
+			-webkit-box-shadow:inset 0px 1px 0px 0px #97c4fe;
+			box-shadow:inset 0px 1px 0px 0px #97c4fe;
+			background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #3d94f6), color-stop(1, #1e62d0) );
+			background:-moz-linear-gradient( center top, #3d94f6 5%, #1e62d0 100% );
+			filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#3d94f6', endColorstr='#1e62d0');
+			background-color:#3d94f6;
+			-webkit-border-top-left-radius:4px;
+			-moz-border-radius-topleft:4px;
+			border-top-left-radius:4px;
+			-webkit-border-top-right-radius:4px;
+			-moz-border-radius-topright:4px;
+			border-top-right-radius:4px;
+			-webkit-border-bottom-right-radius:4px;
+			-moz-border-radius-bottomright:4px;
+			border-bottom-right-radius:4px;
+			-webkit-border-bottom-left-radius:4px;
+			-moz-border-radius-bottomleft:4px;
+			border-bottom-left-radius:4px;
+			text-indent:0;
+			border:1px solid #337fed;
+			display:inline-block;
+			color:#ffffff;
+			font-family:Arial;
+			font-size:13px;
+			font-weight:normal;
+			font-style:normal;
+			height:22px;
+			line-height:22px;
+			width:85px;
+			text-decoration:none;
+			text-align:center;
+			text-shadow:1px 1px 0px #1570cd;
+		}
+		.showMore:hover {
+			background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #1e62d0), color-stop(1, #3d94f6) );
+			background:-moz-linear-gradient( center top, #1e62d0 5%, #3d94f6 100% );
+			filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#1e62d0', endColorstr='#3d94f6');
+			background-color:#1e62d0;
+		}.showMore:active {
+			position:relative;
+			top:1px;
+		}
 	</style>
-	
 </head>
 
 <body>
-
-
 <form name="searchForm" id="searchForm">
 	<label for="search">Search: <input id="search" name="search" type="text" /></label>
 	<label for="searchType">Matching: 
@@ -141,11 +209,6 @@
 	</label>
 	<button id="go" name="go">Show Results</button>
 </form>
-<div id="results">
-
-</div>
-
-
+<div id="results"></div>
 </body>
-
 </html>

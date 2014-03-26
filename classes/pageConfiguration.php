@@ -23,19 +23,22 @@
 		private $pageRegionsCount;
 		
 		function __construct( $pageConfiguration ){
-			$this->setId( $pageConfiguration->id );
-			$this->setName( $pageConfiguration->name );
-			$this->setDefaultConfiguration( $pageConfiguration->defaultConfiguration );
-			$this->setTemplateId( $pageConfiguration->templateId );
-			$this->setTemplatePath( $pageConfiguration->templatePath );
-			$this->setFormatId( $pageConfiguration->formatId );
-			$this->setFormatPath( $pageConfiguration->formatPath );
-			$this->setFormatRecycled( $pageConfiguration->formatRecycled );
-			$this->setOutputExtension( $pageConfiguration->outputExtension );
-			$this->setSerializationType( $pageConfiguration->serializationType );
-			$this->setIncludeXMLDeclaration( $pageConfiguration->includeXMLDeclaration );
-			$this->setPublishable( $pageConfiguration->publishable );
-			$this->setPageRegions( $pageConfiguration->pageRegions );
+			if( is_object( $pageConfiguration ) ){
+		
+				$this->setId( $pageConfiguration->id );
+				$this->setName( $pageConfiguration->name );
+				$this->setDefaultConfiguration( $pageConfiguration->defaultConfiguration );
+				$this->setTemplateId( $pageConfiguration->templateId );
+				$this->setTemplatePath( $pageConfiguration->templatePath );
+				$this->setFormatId( $pageConfiguration->formatId );
+				$this->setFormatPath( $pageConfiguration->formatPath );
+				$this->setFormatRecycled( $pageConfiguration->formatRecycled );
+				$this->setOutputExtension( $pageConfiguration->outputExtension );
+				$this->setSerializationType( $pageConfiguration->serializationType );
+				$this->setIncludeXMLDeclaration( $pageConfiguration->includeXMLDeclaration );
+				$this->setPublishable( $pageConfiguration->publishable );
+				$this->setPageRegions( $pageConfiguration->pageRegions );
+			}
 		}
 		
 		public function setPageRegions( $pageRegions ){

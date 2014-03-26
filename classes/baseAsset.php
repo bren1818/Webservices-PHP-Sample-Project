@@ -12,6 +12,7 @@
 	require_once("pageConfiguration.php");
 	require_once("configurationSet.php");
 	require_once("site.php");
+	require_once("assetIdentifier.php");
 
 	class BaseAsset{
 		private $authentication;
@@ -23,6 +24,7 @@
 		public static $type_contentType = 'contentType';
 		public static $type_pageConfigurationSet = 'pageConfigurationSet';
 		public static $type_site = 'site';
+		public static $type_assetIdentifier = 'assetIdentifier';
 	
 		function __construct( $client, $auth ){
 			$this->setAuth($auth);
@@ -41,6 +43,21 @@
 				$identifier = array('path' => array('siteId' => $SITE_ID, 'path' => $PATH), 'type' => strtolower($TYPE)  );
 			}
 			return $this->getAsset($TYPE, $identifier);
+		}
+		
+		function listSites(){
+			if( $this->authentication != "" && $this->client !="" ){
+				$params = array ('authentication' => $this->authentication);
+				$asset = $this->client->listSites($params);
+				if( $asset->listSitesReturn->success == true && isset(  $asset->listSitesReturn->sites->assetIdentifier ) ){
+					$sites = $asset->listSitesReturn->sites->assetIdentifier;
+					$assetIdentifiers = array();
+					foreach( $sites as $site ){
+						$assetIdentifiers[] = new AssetIdentifier( $site );
+					}	
+					return $assetIdentifiers;
+				}
+			}
 		}
 		
 		function setAuth($auth){

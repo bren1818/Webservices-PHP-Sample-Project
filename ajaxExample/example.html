@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Simple Ajax example</title>
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+	<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript">
+		jQuery.fn.serializeObject = function() {
+		  var arrayData, objectData;
+		  arrayData = this.serializeArray();
+		  objectData = {};
+
+		  $.each(arrayData, function() {
+			var value;
+			if (this.value != null) {
+			  value = this.value;
+			} else {
+			  value = '';
+			}
+
+			if (objectData[this.name] != null) {
+			  if (!objectData[this.name].push) {
+				objectData[this.name] = [objectData[this.name]];
+			  }
+			  objectData[this.name].push(value);
+			} else {
+			  objectData[this.name] = value;
+			}
+		  });
+
+		  return objectData;
+		};
+		
+		function getNested(obj){
+			var html = "<div class='nested'>";
+				jQuery.each(obj, function(key, value){
+					html+= "<b>" + key + "</b><br />";
+					if( value == null || value ===false){
+						html += " - <br />";
+					}else if( typeof(value) == 'object' ){
+						html += getNested(value) + "<br />";
+					}else{	
+						html += value + "<br />";
+					}
+				});
+			html += "</div>";
+			return html;
+		}
+		
+		function previewAsset(type,id,el){
+			console.log( "Lookup " + type + " by id: " + id );
+			$.post( "getAsset.php", { type : type, id : id }, function( data ) {
+				
+				var assetHTML = "";
+				var json = jQuery.parseJSON( data );
+
+				jQuery.each(json, function(key, value){
+					if( value == null || value ===false){
+						assetHTML += "<b>" + key + "</b>" + " <br />-<br />";
+					}else if( typeof(value) == 'object' ){
+						assetHTML += "<b>" + key + "</b><br />";
+						assetHTML += getNested( value ) + "<br />";
+					}else{					
+						assetHTML += "<b>" + key + "</b>" + " <br />" + value + "<br />";
+					}
+				});
+				
+				$(el).parent().append("<div class='preview'>" + assetHTML  + "</div>");
+				
+			});
+		
+		}
+		
+		$(function(){
+			$('#go').click(function(event){
+				event.preventDefault();
+				var formData = $('#searchForm').serializeObject ();
+
+				$.post( "magic.php", { search : formData }, function( data ) {
+					var res = jQuery.parseJSON( data );
+					var resCount = res.results;	
+					if( resCount > 0 ){
+						var HTML = "<p>" + resCount + " results found.</p><ul>";
+						jQuery.each(res.items, function(i, val) {
+							HTML += "<li>" + (i + 1) + ". ID: " + val.id + "<br />" +
+									" - Type: " + val.type +  "<br />" +
+									" - Path: " + val.path.path +  "<br />" +
+									" - SiteName: " + val.path.siteName +  "<br />" +
+									" - SiteId: " + val.path.siteId +  "<br />" +
+									" - Recycled: " + val.recycled + "<br />";
+							HTML += "<a href='#' onClick='previewAsset(\"" + val.type + "\", \"" + val.id+ "\", this)'>preview Asset</a>";
+						});
+						
+						HTML += "</li>";
+						HTML += "</ul>";
+						
+						$('#results').html( HTML );
+					}else{
+						$('#results').html("No Results Found");
+					}
+				});
+			});
+		});
+	</script>
+
+	<style>
+		.nested{
+			margin: 3px;
+			padding-left: 10px;
+			border: 1px solid #000;
+			font-size: 8px;
+		}
+		
+	</style>
+	
+</head>
+
+<body>
+
+
+<form name="searchForm" id="searchForm">
+	<label for="search">Search: <input id="search" name="search" type="text" /></label>
+	<label for="searchType">Matching: 
+		<select id="searchType" name="searchType">
+			<option value="all">all</option>
+			<option value="any">any</option>
+		</select>
+	</label>
+	<label for="searchWhat">
+		For Asset Type:
+		<select name="searchWhat" id="searchWhat">
+			<option value="all">All</option>
+			<option value="page">Pages</option>
+			<option value="file">Files</option>
+			<option value="folder">Folders</option>
+			<option value="template">Templates</option>
+			<option value="block">Blocks</option>
+			<option value="symLink">searchSymlinks</option>
+			<option value="style">stylesheets</option>		
+		</select>
+	</label>
+	<button id="go" name="go">Show Results</button>
+</form>
+<div id="results">
+
+</div>
+
+
+</body>
+
+</html>

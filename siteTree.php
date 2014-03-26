@@ -10,14 +10,12 @@
 	include "classes/baseAsset.php";
 	
 
-	$listSitesParams = array ('authentication' => $auth);
-	$reply = $client->listSites($listSitesParams);
 
 	//These are the 'types' I'm ignoring but are technically available
-	$ignoredTypes = array( "assetfactory", "assetfactorycontainer", "block", "block_FEED", "block_INDEX", "block_TEXT", "block_XHTML_DATADEFINITION", "block_XML", "block_TWITTER_FEED", "connectorcontainer", "twitterconnector", "facebookconnector", "wordpressconnector", "googleanalyticsconnector", "contenttype", "contenttypecontainer", "destination",  "group", "message", "metadataset", "metadatasetcontainer",  "pageconfigurationset", "pageconfiguration", "pageregion", "pageconfigurationsetcontainer", "publishset", "publishsetcontainer", "reference", "role", "datadefinition", "datadefinitioncontainer", "format", "format_XSLT", "format_SCRIPT",  "sitedestinationcontainer", "symlink", "target", "template", "transport", "transport_fs", "transport_ftp", "transport_db", "transportcontainer", "user", "workflow", "workflowdefinition", "workflowdefinitioncontainer");
+	$ignoredTypes = array( "assetfactory", "assetfactorycontainer", "block", "block_FEED", "block_INDEX", "block_TEXT", "block_XHTML_DATADEFINITION", "block_XML", "block_TWITTER_FEED", "connectorcontainer", "twitterconnector", "facebookconnector", "wordpressconnector", "googleanalyticsconnector", "contenttypecontainer", "destination",  "group", "message", "metadataset", "metadatasetcontainer",  "pageconfigurationsetcontainer", "publishset", "publishsetcontainer", "reference", "role", "datadefinition", "datadefinitioncontainer", "format", "format_XSLT", "format_SCRIPT",  "sitedestinationcontainer", "symlink", "target", "template", "transport", "transport_fs", "transport_ftp", "transport_db", "transportcontainer", "user", "workflow", "workflowdefinition", "workflowdefinitioncontainer");
 	
 	//These are types I'm using in this example
-	$safeTypes = array( "folder", "file", "page", "site" );
+	$safeTypes = array( "folder", "file", "page", "site", "pageconfiguration", "pageconfigurationset", "pageregion", "contenttype"  );
 	
 	//URL variable used to build anchor tags
 	$CURRENT_SITE_URL = "http://cascade.wlu.ca/";
@@ -120,28 +118,23 @@
 		$site = $asset->getByPath( BaseAsset::$type_site, $sitePath );
 		
 		echo "<h2>".$site->getName()." (".$site->getUrl().")</h2>";
-
+		//global $CURRENT_SITE_URL;
+		//$CURRENT_SITE_URL = $site->getUrl();
 		echo "<ul class='site'>";
 			read_folder( show_contents( '/', $site->getId() ) );
 		echo "</ul>";
 	}
 	
-	if (isset($reply->listSitesReturn) && $reply->listSitesReturn->success=='true'){
-		$sites = $reply->listSitesReturn->sites->assetIdentifier;
-		if( is_array($sites) && sizeof( $sites ) > 0 ){
-			foreach( $sites as $site){
-				//id, path[path, siteId, siteName], type, recycled
-				echo "Site Name: ".($site->path->siteName == "" ? $site->path->path : $site->path->siteName)." (id: ".$site->id.")<br />";
-				
-				
-				//If we're only interested in reading one site
-				if( $site->path->path == "Introduction"){
-					read_site( $site->path->path );
-				}
-				
-				//otherwise just show them all
-				//read_site( $site->path->path );
-				//echo '<hr />';
+	$sites = new BaseAsset($client, $auth);
+	$sites = $sites->listSites();
+	
+	if( is_array($sites) && sizeof( $sites ) > 0 ){
+		foreach( $sites as $site){
+			echo "Site Name: ".($site->getSiteName() == "" ? $site->getPath() : $site->getSiteName())." (id: ".$site->getId().")<br />";
+			
+			//If we're only interested in reading one site
+			if( $site->getPath() == "Introduction"){
+				read_site( $site->getPath() );
 			}
 		}
 	}

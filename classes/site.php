@@ -3,6 +3,8 @@
  *Simple Site Class 
  *by Brendon Irwin
  */
+	
+ 
 	class Site{
 		private $id;
 		private $name;
@@ -47,7 +49,7 @@
 			
 			//implements others later
 			
-		}
+		}		
 		
 		function setId($id) { $this->id = $id; }
 		function getId() { return $this->id; }
